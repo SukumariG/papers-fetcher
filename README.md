@@ -52,11 +52,8 @@ papers-fetcher/
 
 ### Example Usage:
 
-poetry run python -m papers_fetcher.cli \
-  --query "machine learning in healthcare" \
-  --file results.csv \
-  --max-results 10 \
-  --debug
+poetry run python -m papers_fetcher.cli "machine learning AND cancer" --file results.csv --max-results 10 --debug
+
 
 
 ## Project Motivation
