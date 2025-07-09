@@ -24,20 +24,19 @@ Key features:
 
 ## Repository Structure
 
+
 papers-fetcher/
 │
-├── papers_fetcher/ # Python package with CLI and data fetching logic
-│ ├── init.py
+├── papers_fetcher/ # Python package (main code)
+│ ├── init.py # Package initializer
 │ ├── cli.py # Command-line interface script
-│ └── fetcher.py # Functions for API calls and CSV generation
+│ └── fetcher.py # Core logic for fetching and saving papers
 │
 ├── pyproject.toml # Poetry project configuration
-├── README.md # Project documentation
-└── .git/ # Git repository folder
+├── README.md # Project documentation (this file)
+└── results.csv # Sample output file (optional; generated after running)
+```
 
-bash
-Copy
-Edit
 
 ## Installation
 
@@ -47,30 +46,29 @@ Clone the repository and install dependencies using Poetry:
 git clone https://github.com/SukumariG/papers-fetcher.git
 cd papers-fetcher
 poetry install
-Usage Example
-Example command:
 
-bash
-Copy
-Edit
+
+## Command-Line Options
+
+| Option                   | Shorthand | Description                                                       | Required |
+|--------------------------|-----------|-------------------------------------------------------------------|----------|
+| `--query`                | *(none)*  | PubMed search query to fetch papers.                              | ✅ Yes   |
+| `--file`                 | `-f`      | CSV filename to save results. If not provided, prints to console. | No       |
+| `--max-results`          | `-m`      | Maximum number of papers to retrieve (default: 20).               | No       |
+| `--debug`                | `-d`      | Enable debug logs for detailed tracing.                           | No       |
+| `--help`                 | `-h`      | Show help message and exit.                                       | No       |
+
+---
+
+### ✅ Example Usage:
+```bash
 poetry run python -m papers_fetcher.cli \
   --query "machine learning in healthcare" \
   --file results.csv \
   --max-results 10 \
   --debug
-Command-line options:
 
---query (required): PubMed search query.
 
---file (optional): Output CSV filename. If omitted, results are printed.
-
---max-results (optional): Maximum number of papers to fetch (default: 20).
-
---debug (optional): Enables debug logging.
-
-Project Motivation
+## Project Motivation
 This tool was created to explore automated research data collection, particularly for life sciences and healthcare fields.
 It combines API interactions, data processing, and command-line scripting to provide a practical and reusable solution.
-
-Author
-Sukumari G
