@@ -23,8 +23,6 @@ Key features:
 - Debug mode for detailed logs during execution.
 
 ## Repository Structure
-
-
 papers-fetcher/
 │
 ├── papers_fetcher/ # Python package (main code)
@@ -35,17 +33,9 @@ papers-fetcher/
 ├── pyproject.toml # Poetry project configuration
 ├── README.md # Project documentation (this file)
 └── results.csv # Sample output file (optional; generated after running)
-```
 
 
-## Installation
 
-Clone the repository and install dependencies using Poetry:
-
-```bash
-git clone https://github.com/SukumariG/papers-fetcher.git
-cd papers-fetcher
-poetry install
 
 
 ## Command-Line Options
@@ -60,8 +50,8 @@ poetry install
 
 ---
 
- ### Example Usage:
-```bash
+### Example Usage:
+
 poetry run python -m papers_fetcher.cli \
   --query "machine learning in healthcare" \
   --file results.csv \
