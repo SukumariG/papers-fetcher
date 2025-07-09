@@ -52,7 +52,7 @@ poetry install
 
 | Option                   | Shorthand | Description                                                       | Required |
 |--------------------------|-----------|-------------------------------------------------------------------|----------|
-| `--query`                | *(none)*  | PubMed search query to fetch papers.                              | ✅ Yes   |
+| `--query`                | *(none)*  | PubMed search query to fetch papers.                              |   Yes   |
 | `--file`                 | `-f`      | CSV filename to save results. If not provided, prints to console. | No       |
 | `--max-results`          | `-m`      | Maximum number of papers to retrieve (default: 20).               | No       |
 | `--debug`                | `-d`      | Enable debug logs for detailed tracing.                           | No       |
@@ -60,7 +60,7 @@ poetry install
 
 ---
 
-### ✅ Example Usage:
+ ### Example Usage:
 ```bash
 poetry run python -m papers_fetcher.cli \
   --query "machine learning in healthcare" \
