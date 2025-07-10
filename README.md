@@ -58,4 +58,4 @@ poetry run python -m papers_fetcher.cli "machine learning AND cancer" --file res
 
 ## Project Motivation
 This tool was created to explore automated research data collection, particularly for life sciences and healthcare fields.
-It combines API interactions, data processing, and command-line scripting to provide a practical and reusable solution.
+It combines API interactions, data processing, and command-line scripting to provide a practical and reusable solution

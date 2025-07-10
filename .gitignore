@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg
+*.egg-info/
+dist/
+build/
+*.pyo
+*.pyd
+*.so
+*.log
+
+# Virtual Environments
+.venv/
+.env/
+.venv*/ 
+poetry.lock
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# CSV Results
+results.csv

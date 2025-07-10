@@ -1,77 +1,111 @@
-import requests
-import xml.etree.ElementTree as ET
+import requests  # For API requests
+import pandas as pd  # For creating CSV files
+from typing import List, Dict, Any  # For type hints
 
-def fetch_and_process_papers(query, max_results=20, debug=False):
-    ids = fetch_pubmed_ids(query, max_results)
-    if debug:
-        print(f"Fetched IDs: {ids}")
 
-    papers = fetch_paper_details(ids, debug=debug)
-    return papers
+# Function to fetch PubMed IDs based on a query
+def fetch_pubmed_ids(query: str, max_results: int = 20) -> List[str]:
+    """
+    Fetches PubMed IDs using the search query.
 
-def fetch_pubmed_ids(query, max_results):
+    Args:
+        query (str): The search query for PubMed.
+        max_results (int): Maximum number of results to fetch.
+
+    Returns:
+        List[str]: List of PubMed IDs.
+    """
     url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
     params = {
-        "db": "pubmed",
-        "term": query,
-        "retmax": max_results,
-        "retmode": "json"
+        "db": "pubmed",       # Database to search
+        "term": query,        # Search query (PubMed supports advanced queries)
+        "retmode": "json",    # Return format as JSON
+        "retmax": max_results, # Max number of results to return
     }
-    response = requests.get(url, params=params)
-    response.raise_for_status()
-    data = response.json()
-    return data.get("esearchresult", {}).get("idlist", [])
 
-def fetch_paper_details(ids, debug=False):
-    if not ids:
+    try:
+        # Make the API request
+        response = requests.get(url, params=params)
+        response.raise_for_status()  # Raise error for HTTP issues
+
+        # Parse JSON response
+        data = response.json()
+
+        # Extract and return the list of PubMed IDs
+        return data.get("esearchresult", {}).get("idlist", [])
+
+    except requests.RequestException as e:
+        print(f"Network error while fetching PubMed IDs: {e}")
+        return []  # Return empty list on error
+    except ValueError as e:
+        print(f"Error parsing JSON response for PubMed IDs: {e}")
         return []
 
-    ids_str = ",".join(ids)
-    url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
+
+# Function to fetch details of papers using PubMed IDs
+def fetch_paper_details(pubmed_ids: List[str]) -> List[Dict[str, Any]]:
+    """
+    Fetches paper details from PubMed based on a list of PubMed IDs.
+
+    Args:
+        pubmed_ids (List[str]): List of PubMed IDs.
+
+    Returns:
+        List[Dict[str, Any]]: List of dictionaries containing paper details.
+    """
+    if not pubmed_ids:
+        return []  # No IDs provided
+
+    url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi"
     params = {
         "db": "pubmed",
-        "id": ids_str,
-        "retmode": "xml"
+        "id": ",".join(pubmed_ids),  # Combine all IDs as a comma-separated string
+        "retmode": "json",
     }
-    response = requests.get(url, params=params)
-    response.raise_for_status()
 
-    root = ET.fromstring(response.text)
-    papers = []
-    for article in root.findall(".//PubmedArticle"):
-        paper = {}
-        medline = article.find("MedlineCitation")
-        article_info = medline.find("Article")
-        paper["PubmedID"] = medline.findtext("PMID")
-        paper["Title"] = article_info.findtext("ArticleTitle")
-        paper["Publication Date"] = extract_pub_date(article_info)
-        paper["Non-academic Author(s)"], paper["Company Affiliation(s)"] = extract_authors(article_info, debug)
-        paper["Corresponding Author Email"] = extract_email(article_info)
-        papers.append(paper)
-    return papers
+    try:
+        # Make the API request
+        response = requests.get(url, params=params)
+        response.raise_for_status()
 
-def extract_pub_date(article_info):
-    journal = article_info.find("Journal/JournalIssue/PubDate")
-    year = journal.findtext("Year")
-    month = journal.findtext("Month")
-    day = journal.findtext("Day")
-    return f"{year or ''}-{month or ''}-{day or ''}".strip("-")
+        # Parse JSON response
+        data = response.json()
 
-def extract_authors(article_info, debug=False):
-    non_academic_authors = []
-    company_affiliations = []
-    for author in article_info.findall("AuthorList/Author"):
-        affiliations = [aff.text for aff in author.findall("AffiliationInfo/Affiliation") if aff.text]
-        name = f"{author.findtext('ForeName', '')} {author.findtext('LastName', '')}".strip()
-        for aff in affiliations:
-            if any(keyword in aff.lower() for keyword in ["pharma", "biotech", "therapeutics", "laboratories", "inc.", "corp", "company", "ltd"]):
-                company_affiliations.append(aff)
-                non_academic_authors.append(name)
-    return "; ".join(non_academic_authors), "; ".join(company_affiliations)
+        papers = []
+        for uid in pubmed_ids:
+            paper_data = data.get("result", {}).get(uid, {})
+            papers.append({
+                "PubmedID": paper_data.get("uid"),
+                "Title": paper_data.get("title"),
+                "Publication Date": paper_data.get("pubdate"),
+                # Placeholder fields for company detection (to implement later)
+                "Non-academicAuthor(s)": "NA",
+                "CompanyAffiliation(s)": "NA",
+                "Corresponding Author Email": "NA",
+            })
 
-def extract_email(article_info):
-    for affiliation in article_info.findall(".//AffiliationInfo/Affiliation"):
-        text = affiliation.text or ""
-        if "@" in text:
-            return text.split()[-1]  # crude email extraction
-    return ""
+        return papers
+
+    except requests.RequestException as e:
+        print(f"Network error while fetching paper details: {e}")
+        return []
+    except ValueError as e:
+        print(f"Error parsing JSON response for paper details: {e}")
+        return []
+
+
+# Function to save paper data into a CSV file
+def save_to_csv(papers: List[Dict[str, Any]], filename: str) -> None:
+    """
+    Saves the fetched paper data to a CSV file.
+
+    Args:
+        papers (List[Dict[str, Any]]): List of paper details.
+        filename (str): CSV file name to save the data.
+    """
+    try:
+        df = pd.DataFrame(papers)  # Create a DataFrame from the data
+        df.to_csv(filename, index=False)  # Save to CSV without row index
+        print(f"Results saved successfully to {filename}")
+    except Exception as e:
+        print(f"Failed to save CSV file: {e}")
